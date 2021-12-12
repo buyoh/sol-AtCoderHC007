@@ -15,7 +15,8 @@ set<int> mstFull() {
 
   Unionfind uf(N);
   vector<pair<int, int>> edges;
-  repeat(i, M) edges.emplace_back(graph_.edges[i].value, i);
+  repeat(i, M) edges.emplace_back(graph_.edges[i].value * 3,
+                                  i); // 1.7 倍ぐらいを期待値にしておく
   sort(all(edges));
   for (auto p : edges) {
     int ei = p.second;
@@ -28,12 +29,18 @@ set<int> mstFull() {
   return selected;
 }
 
-set<int> mstPartial(Unionfind continued_uf, int enable_edge_begin) { // クソ雑
+set<int> mstPartial(const Unionfind &continued_uf,
+                    int enable_edge_begin) { // クソ雑
   set<int> selected;
 
   Unionfind uf = continued_uf;
   vector<pair<int, int>> edges;
-  iterate(i, enable_edge_begin, M) edges.emplace_back(graph_.edges[i].value, i);
+
+  // enable_edge_begin has actual value
+  edges.emplace_back(graph_.edges[enable_edge_begin].value, enable_edge_begin);
+  iterate(i, enable_edge_begin + 1, M)
+      edges.emplace_back(graph_.edges[i].value * rand(200, 500) / 100, i);
+
   sort(all(edges));
   for (auto p : edges) {
     int ei = p.second;
@@ -61,12 +68,13 @@ void solve() {
     auto p1 = points_[a];
     auto p2 = points_[b];
     int l = (p1.x - p2.x) * (p1.x - p2.x) + (p1.y - p2.y) * (p1.y - p2.y);
-    graph_.connect(a, b, l * 3); // 1.7 倍ぐらいを期待値にしておく
+    // graph_.connect(a, b, l * 3); // 1.7 倍ぐらいを期待値にしておく
+    graph_.connect(a, b, l); // 1.7 倍ぐらいを期待値にしておく
   }
 
   //
 
-  auto selected = mstFull();
+  // auto selected = mstFull();
 
   //
 
@@ -80,29 +88,17 @@ void solve() {
 
     // update
     edge.value = actual_length;
-    selected = mstPartial(uf, i);
 
-    // if (actual_length > edge.value*2) {
-    //   // 雑
-    //   Unionfind uf2 = uf;
-    //   iterate(j, i+1, M) {
-    //     auto e = graph_.edges[j];
-    //     uf2.connect(e.u, e.v);
-    //   }
-    //   if (uf2.size(0) == N) {
-    //     cout << "0" << endl;
-    //   } else {
-    //     uf.connect(edge.u, edge.v);
-    //     cout << "1" << endl;
-    //   }
-    // } else {
-    //   if (uf.connect(edge.u, edge.v)) {
-    //     cout << "1" << endl;
-    //   } else {
-    //     cout << "0" << endl;
-    //   }
-    // }
-    if (selected.count(i)) {
+    // selected = mstPartial(uf, i);
+    int ok = 0, ng = 0;
+    repeat(_, 5) {
+      auto selected = mstPartial(uf, i);
+      (selected.count(i) ? ok : ng) += 1;
+    }
+
+    // if (selected.count(i)) {
+    // if (ok * 10 > (ok + ng) * 3) {
+    if (ok >= 3) {
       ana_total += actual_length;
       uf.connect(edge.u, edge.v);
       cout << "1" << endl;
