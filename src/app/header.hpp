@@ -1,6 +1,7 @@
-#pragma GCC optimize ("O3")
+#pragma GCC optimize("O3")
 #include <bits/stdc++.h>
 
+// clang-format off
 using namespace std;
 using ll = long long int;
 
@@ -8,8 +9,9 @@ using ll = long long int;
 #define repeat(cnt,l) for(typename remove_const<typename remove_reference<decltype(l)>::type>::type cnt={};(cnt)<(l);++(cnt))
 #define rrepeat(cnt,l) for(auto cnt=(l)-1;0<=(cnt);--(cnt))
 #define iterate(cnt,b,e) for(auto cnt=(b);(cnt)!=(e);++(cnt))
-#define diterate(cnt,b,e) for(auto cnt=(b);(cnt)!=(e);--(cnt))
-const long long MD = 1000000007ll; const long double PI = 3.1415926535897932384626433832795L;
+#define increase(cnt,b,e) for(auto cnt=(b);(cnt)<(e);++(cnt))
+#define decrease(cnt,b,e) for(auto cnt=(b);(e)<=(cnt);--(cnt))
+const long long MD = 1000000007; const long double PI = 3.1415926535897932384626433832795L;
 template<typename T1, typename T2> inline ostream& operator <<(ostream &o, const pair<T1, T2> p) { o << '(' << p.first << ':' << p.second << ')'; return o; }
 template<typename T> inline T& chmax(T& to, const T& val) { return to = max(to, val); }
 template<typename T> inline T& chmin(T& to, const T& val) { return to = min(to, val); }
@@ -20,24 +22,18 @@ inline T rand(T l, T h, Random& rand = randdev) { return uniform_int_distributio
 template<typename T, typename Random = decltype(randdev), typename enable_if<is_floating_point<T>::value>::type* = nullptr>
 inline T rand(T l, T h, Random& rand = randdev) { return uniform_real_distribution<T>(l, h)(rand); }template<typename T>
 static ostream& operator<<(ostream& o, const std::vector<T>& v) {
-  o << "[ "; for(const auto& e : v) o<<e<<' ';
-  return o << ']';
+  o << "[ "; for(const auto& e : v) o<<e<<' '; return o << ']';
 }
 
-template <typename I>
-struct MyRangeFormat{ I b,e; MyRangeFormat(I _b, I _e):b(_b),e(_e){} };
-template<typename I>
-static ostream& operator<<(ostream& o, const MyRangeFormat<I>& f) {
-  o << "[ "; iterate(i,f.b,f.e) o<<*i<<' ';
-  return o << ']';
+template <typename I> struct MyRangeFormat{ I b,e; MyRangeFormat(I _b, I _e):b(_b),e(_e){} };
+template<typename I> static ostream& operator<<(ostream& o, const MyRangeFormat<I>& f) {
+  o << "[ "; iterate(i,f.b,f.e) o<<*i<<' '; return o << ']';
 }
-template <typename I>
-struct MyMatrixFormat{
+template <typename I> struct MyMatrixFormat{
   const I& p; long long n, m;
   MyMatrixFormat(const I& _p, long long _n, long long _m):p(_p),n(_n),m(_m){}
 };
-template<typename I>
-static ostream& operator<<(ostream& o, const MyMatrixFormat<I>& f) {
+template<typename I> static ostream& operator<<(ostream& o, const MyMatrixFormat<I>& f) {
   o<<'\n';
   repeat(i,(f.n)) {
     repeat(j,f.m) o<<f.p[i][j]<<' ';
@@ -108,7 +104,7 @@ public:
   inline MaiPrinter& operator<<(char c) noexcept { putc_x(c, fp_); return *this; }
   template<typename T, typename enable_if<is_integral<T>::value, nullptr_t>::type = nullptr>
   inline MaiPrinter& operator<<(T var) noexcept { output_integer<T>(var); return *this; }
-  inline MaiPrinter& operator<<(char* str_p) noexcept { while (*str_p) putc_x(*(str_p++), fp_); return *this; }
+  inline MaiPrinter& operator<<(const char* str_p) noexcept { while (*str_p) putc_x(*(str_p++), fp_); return *this; }
   inline MaiPrinter& operator<<(const string& str) {
     const char* p = str.c_str();
     const char* l = p + str.size();
@@ -119,3 +115,151 @@ public:
 };
 MaiScanner scanner(stdin);
 MaiPrinter printer(stdout);
+// clang-format on
+
+class Unionfind {
+public:
+  vector<int> data;
+  explicit Unionfind(int size) : data(size, -1) {}
+  bool connect(int x, int y) {
+    x = root(x);
+    y = root(y);
+    if (x != y) {
+      if (data[y] < data[x])
+        swap(x, y);
+      data[x] += data[y];
+      data[y] = (int)x;
+    }
+    return x != y;
+  }
+  inline bool same(int x, int y) { return root(x) == root(y); }
+  inline int root(int x) {
+    return (int)(data[x] < 0 ? x : data[x] = root(data[x]));
+  }
+  inline int size(int x) { return -data[root(x)]; }
+};
+
+struct P {
+  using T = int;
+  T y, x;
+
+  inline explicit P(T _y, T _x) : y(_y), x(_x) {}
+  inline P() : y(0), x(0) {}
+
+  inline bool operator==(P p) const { return y == p.y && x == p.x; }
+  inline bool operator<(P p) const { return y == p.y ? x < p.x : y < p.y; }
+  inline P operator+(P p) const { return P(y + p.y, x + p.x); }
+  inline P operator-(P p) const { return P(y - p.y, x - p.x); }
+  inline P &operator+=(P p) {
+    y += p.y;
+    x += p.x;
+    return *this;
+  }
+  inline P &operator-=(P p) {
+    y -= p.y;
+    x -= p.x;
+    return *this;
+  }
+  inline P &operator*=(T m) {
+    y *= m;
+    x *= m;
+    return *this;
+  }
+  inline T distM(P p) const { return abs(y - p.y) + abs(x - p.x); }
+  inline T distC(P p) const { return max(abs(y - p.y), abs(x - p.x)); }
+  template <typename ITR> ITR nearestM(ITR begin, ITR end) const {
+    if (begin == end)
+      return end;
+    T best = distM(*begin);
+    ITR besti = begin;
+    for (ITR it = begin; ++it, it != end;) {
+      T m = distM(*it);
+      if (best < m) {
+        best = m;
+        besti = it;
+      }
+    }
+    return besti;
+  }
+};
+inline ostream &operator<<(ostream &os, P p) {
+  os << '(' << p.y << ',' << p.x << ')';
+  return os;
+}
+
+const P FourMoving[] = {P(-1, 0), P(0, 1), P(1, 0), P(0, -1)};
+const P FiveMoving[] = {P(-1, 0), P(0, 1), P(1, 0), P(0, -1), P(0, 0)};
+const P EightMoving[] = {P(-1, 0),  P(0, 1),  P(1, 0),  P(0, -1),
+                         P(-1, -1), P(-1, 1), P(1, -1), P(1, 1)};
+
+inline P operator*(P::T m, P p) noexcept { return P(m * p.y, m * p.x); }
+
+template <typename T>
+// using T = int;
+struct F {
+  int height, width;
+  vector<T> data;
+
+  explicit F(int h, int w) : height(h), width(w), data(h * w) {}
+  F() : F(1, 1) {}
+
+  inline T &operator()(int y, int x) { return data[x + y * width]; }
+  inline T &operator()(P p) { return data[p.x + p.y * width]; }
+  inline T operator()(int y, int x) const { return data[x + y * width]; }
+  inline T operator()(P p) const { return data[p.x + p.y * width]; }
+
+  inline bool safe(int y, int x) const {
+    return 0 <= y && y < height && 0 <= x && x < width;
+  }
+  inline bool safe(P p) const {
+    return 0 <= p.y && p.y < height && 0 <= p.x && p.x < width;
+  }
+
+  inline void fill(T e) { std::fill(data.begin(), data.end(), e); }
+  inline void resize(int h, int w) {
+    height = h;
+    width = w;
+    data.resize(h * w);
+  }
+
+  void print(ostream &os, int setw_arg = 4) {
+    for (int y = 0; y < height; ++y) {
+      for (int x = 0; x < width; ++x)
+        os << setw(setw_arg) << operator()(y, x) << ' ';
+      os << '\n';
+    }
+  }
+};
+
+// Edge構造体を定義する無向グラフ
+class GraphE {
+public:
+  using W_T = int;
+  struct Edge {
+    int u, v;
+    W_T value;
+    Edge(int from = 0, int to = 0, W_T value = 0)
+        : u(from), v(to), value(value) {}
+    inline int to(int _v) const { return _v == v ? u : v; }
+  };
+  size_t n;
+  vector<vector<int>> vertex_to;
+  vector<Edge> edges;
+
+  explicit GraphE(int n = 1) : n(n), vertex_to(n) {}
+
+  inline size_t size() const noexcept { return n; }
+  void resize(size_t _n) { vertex_to.resize(n = _n); }
+  void connect(int from, int to, W_T val = 0) {
+    vertex_to[(size_t)from].push_back((int)edges.size());
+    vertex_to[(size_t)to].push_back((int)edges.size());
+    edges.emplace_back(from, to, val);
+  }
+  void connect(vector<Edge> &&es) {
+    edges = move(es);
+    for (int i = 0; (size_t)i < edges.size(); ++i) {
+      vertex_to[edges[i].u].push_back(i);
+      vertex_to[edges[i].v].push_back(i);
+    }
+  }
+};

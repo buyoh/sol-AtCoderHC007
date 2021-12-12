@@ -5,5 +5,5 @@ CNT=$1
 set -eu
 cd `dirname $0`/..
 
-src/generator/generator_multi.sh $CNT
-cat src/generator/out/list.txt
+cd third_party/tools/in/
+ls | xargs readlink -f

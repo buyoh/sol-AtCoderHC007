@@ -10,4 +10,6 @@ for FILE in `ls stdin`; do
   FILE_STDERR="out/$ID.err.txt"
 
   ./bin/run.sh < $FILE_STDIN > $FILE_STDOUT 2> $FILE_STDERR
+  echo $ID
+  tail -n2 $FILE_STDERR
 done
